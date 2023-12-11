@@ -163,7 +163,7 @@ exports.getToursStats = async (req, res) => {
 
 exports.getMonthlyPlan = async (req, res) => {
   try {
-    const year = req.params.year;
+    const { year } = req.params;
 
     const plan = await Tour.aggregate([
       {
