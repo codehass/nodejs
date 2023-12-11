@@ -6,6 +6,7 @@ const {
   updateTour,
   deleteTour,
   aliasTopTours,
+  getToursStats,
 } = require('../controllers/tourController');
 
 // 2) ROUTES HANDLERS
@@ -14,6 +15,7 @@ const router = express.Router();
 // router.param('id', checkId);
 
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
+router.route('/tour-stats').get(getToursStats, getAllTours);
 router.route('/').get(getAllTours).post(createTour);
 router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
