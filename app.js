@@ -8,6 +8,8 @@ const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
+console.log(process.env.NODE_ENV);
+
 // 1) MIDDLEWARE
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
