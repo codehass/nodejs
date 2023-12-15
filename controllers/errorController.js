@@ -1,9 +1,19 @@
 const AppError = require('../utils/appError');
 
 const handleCastErrorDB = (err) => {
-  const message = `Invalid ${err.path}: ${err.value}`;
-  return AppError(message, 400);
+  const message = `Invalid ${err.path}: ${err.value}.`;
+  return new AppError(message, 400);
 };
+
+const handleDuplicateFieldsDB = (err) => {
+  const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+  console.log(value);
+
+  const message = `Duplicate field: ${value} . Please use another value!`;
+
+  return new AppError(message, 400);
+};
+
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -13,18 +23,18 @@ const sendErrorDev = (err, res) => {
   });
 };
 
-const sendErrorPro = (err, res) => {
-  // operational, trusted error: send message to client
+const sendErrorProd = (err, res) => {
+  // Operational, trusted error: send message to client
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
       message: err.message,
     });
 
-    //Programming or other unknown error: don't lake error to client
+    // Programming or other unknown error: don't leak error details
   } else {
-    // 1) Log error:
-    console.error('Error 💥', err);
+    // 1) Log error
+    console.error('ERROR 💥', err);
 
     // 2) Send generic message
     res.status(500).json({
@@ -35,7 +45,7 @@ const sendErrorPro = (err, res) => {
 };
 
 module.exports = (err, req, res, next) => {
-  // console.log(err.stack)
+  // console.log(err.stack);
 
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
@@ -46,6 +56,8 @@ module.exports = (err, req, res, next) => {
     let error = { ...err };
 
     if (error.name === 'CastError') error = handleCastErrorDB(error);
-    sendErrorPro(error, res);
+    if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+
+    sendErrorProd(error, res);
   }
 };
