@@ -93,7 +93,6 @@ exports.protect = catchAsync(async (req, res, next) => {
 exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
-    console.log(req.user);
     // roles ['admin', 'lead-guide']. role='user'
     if (!roles.includes(req.user.role)) {
       return next(
@@ -103,3 +102,16 @@ exports.restrictTo =
 
     next();
   };
+
+exports.forgetPassword = catchAsync(async (req, res, next) => {
+  // 1) Get user based on POSTED email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with this email', 404));
+  }
+
+  // 2) send it to user email
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+});
+exports.resetPassword = (req, res, next) => {};
