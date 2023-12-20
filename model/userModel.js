@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema({
     validate: [validator.isEmail, 'Please proved a valid email!'],
   },
   photo: String,
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user',
+  },
   password: {
     type: String,
     required: [true, 'Please proved a password!'],
@@ -37,13 +42,13 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', async function (next) {
-  // only run this function if the password was actually modified
+  // Only run this function if password was actually modified
   if (!this.isModified('password')) return next();
 
-  // Hash the password with the cost of 12
+  // Hash the password with cost of 12
   this.password = await bcrypt.hash(this.password, 12);
 
-  // Delete the password confirm field
+  // Delete passwordConfirm field
   this.passwordConfirm = undefined;
   next();
 });
@@ -62,11 +67,10 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
       10,
     );
 
-    console.log(changedTimestamp, JWTTimestamp, 'teteteteteet');
     return JWTTimestamp < changedTimestamp;
   }
 
-  //false means NOT changed
+  // False means NOT changed
   return false;
 };
 
